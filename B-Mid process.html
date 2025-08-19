@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phone Number Verification</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #a78bfa 0%, #6d28d9 100%);
+        }
+        /* Custom spinner for loading states */
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid #fff;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="p-4">
+    <div class="bg-white p-8 rounded-2xl shadow-2xl max-w-md w-full border border-purple-200">
+        <h1 class="text-3xl font-extrabold text-center text-purple-800 mb-6">
+            📞 Phone Verification
+        </h1>
+        <div class="mb-5">
+            <label for="phoneNumber" class="block text-sm font-medium text-gray-700 mb-2">
+                Enter Phone Number
+            </label>
+            <input
+                type="tel"
+                id="phoneNumber"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200"
+                placeholder="">
+        </div>
+        <button id="sendCodeBtn"
+            class="w-full py-3 px-4 rounded-lg text-white font-semibold transition duration-300 transform
+            bg-purple-600 hover:bg-purple-700 hover:scale-105 active:scale-95 shadow-lg shadow-purple-200">
+            Send Verification Code
+        </button>
+        <div id="verificationSection" class="hidden">
+            <div class="mt-6 mb-5">
+                <label for="verificationCode" class="block text-sm font-medium text-gray-700 mb-2">
+                    Enter Verification Code
+                </label>
+                <input
+                    type="text"
+                    id="verificationCode"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200 text-center tracking-widest text-lg"
+                    placeholder=""
+                    maxlength="6">
+            </div>
+            <button id="verifyCodeBtn"
+                class="w-full py-3 px-4 rounded-lg text-white font-semibold transition duration-300 transform
+                bg-green-600 hover:bg-green-700 hover:scale-105 active:scale-95 shadow-lg shadow-green-200 mt-4">
+                Verify Code
+            </button>
+        </div>
+        <div id="messageDisplay" class="mt-6 text-center font-medium"></div>
+    </div>
+    
+    <script>
+        const VALID_PHONE_NUMBER = '0716434323';
+        const VALID_VERIFICATION_CODE = '123456';
+        const phoneNumberInput = document.getElementById('phoneNumber');
+        const sendCodeBtn = document.getElementById('sendCodeBtn');
+        const verificationSection = document.getElementById('verificationSection');
+        const verificationCodeInput = document.getElementById('verificationCode');
+        const verifyCodeBtn = document.getElementById('verifyCodeBtn');
+        const messageDisplay = document.getElementById('messageDisplay');
+        let resendTimer = 0;
+        let timerInterval;
+        function displayMessage(msg, isSuccess) {
+            messageDisplay.textContent = msg;
+            if (isSuccess) {
+                messageDisplay.classList.remove('text-red-600');
+                messageDisplay.classList.add('text-green-600');
+            } else {
+                messageDisplay.classList.remove('text-green-600');
+                messageDisplay.classList.add('text-red-600');
+            }
+        }
+        function startResendTimer() {
+            resendTimer = 60;
+            sendCodeBtn.disabled = true;
+            sendCodeBtn.innerHTML = `Sending Code... <span class="spinner inline-block ml-2"></span>`;
+            phoneNumberInput.disabled = true;
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                resendTimer--;
+                if (resendTimer > 0) {
+                    sendCodeBtn.textContent = `Send Verification Code (${resendTimer}s)`;
+                } else {
+                    clearInterval(timerInterval);
+                    sendCodeBtn.disabled = false;
+                    sendCodeBtn.textContent = `Resend Verification Code`;
+                    phoneNumberInput.disabled = false;
+                    displayMessage("You can now resend the code.", false);
+                }
+            }, 1000);
+            setTimeout(() => {
+                if (resendTimer > 0) {
+                   sendCodeBtn.textContent = `Send Verification Code (${resendTimer}s)`;
+                }
+                verificationSection.classList.remove('hidden');
+                displayMessage(`Verification code sent!`, true);
+            }, 2000);
+        }
+        sendCodeBtn.addEventListener('click', () => {
+            const phoneNumber = phoneNumberInput.value;
+            displayMessage('', false);
+            if (!/^\d{10}$/.test(phoneNumber)) {
+                displayMessage('Please enter a valid 10-digit phone number.', false);
+                return;
+            }
+            if (phoneNumber !== VALID_PHONE_NUMBER) {
+                displayMessage(`🚫 Verification is only enabled for a specific number.`, false);
+                return;
+            }
+            startResendTimer();
+        });
+        verifyCodeBtn.addEventListener('click', async () => {
+            const phoneNumber = phoneNumberInput.value;
+            const verificationCode = verificationCodeInput.value;
+            displayMessage('', false);
+            if (!verificationCode) {
+                displayMessage('Please enter the verification code.', false);
+                return;
+            }
+            verifyCodeBtn.disabled = true;
+            verifyCodeBtn.innerHTML = `Verifying... <span class="spinner inline-block ml-2"></span>`;
+            try {
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                if (phoneNumber === VALID_PHONE_NUMBER && verificationCode === VALID_VERIFICATION_CODE) {
+                    displayMessage('Phone number verified successfully! ✅', true);
+                    clearInterval(timerInterval);
+                    resendTimer = 0;
+                    sendCodeBtn.disabled = true;
+                    phoneNumberInput.disabled = true;
+                    verificationCodeInput.disabled = true;
+                    verificationSection.classList.remove('hidden');
+                    verifyCodeBtn.disabled = true;
+                    verifyCodeBtn.textContent = 'Verified';
+                    
+                    setTimeout(() => {
+                        window.location.href = 'C-After login.html';
+                    }, 1000);
+                } else {
+                    displayMessage('Invalid verification code. Please try again. ❌', false);
+                }
+            } catch (error) {
+                displayMessage('Verification failed. Please try again.', false);
+                console.error('Verify code error:', error);
+            } finally {
+                verifyCodeBtn.disabled = false;
+                if (verifyCodeBtn.textContent !== 'Verified') {
+                    verifyCodeBtn.textContent = 'Verify Code';
+                }
+            }
+        });
+    </script>
+</body>
+</html>

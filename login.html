@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dark Theme Login Form</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* General Styles */
+        :root {
+            --bg-color: #121212;
+            --form-bg: #1e1e1e;
+            --input-bg: #2b2b2b;
+            --primary-color: #6a1b9a; /* A rich purple */
+            --text-color: #e0e0e0;
+            --label-color: #b0b0b0;
+            --error-color: #f44336;
+            --success-color: #28a745;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: var(--text-color);
+            overflow: hidden;
+        }
+
+        .login-container {
+            background-color: var(--form-bg);
+            padding: 50px;
+            border-radius: 16px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+            width: 380px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+        }
+
+        h2 {
+            margin-bottom: 35px;
+            color: var(--primary-color);
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 15px;
+            font-size: 16px;
+            color: var(--text-color);
+            background-color: var(--input-bg);
+            border: 1px solid transparent;
+            border-radius: 8px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .input-group input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(106, 27, 154, 0.2);
+        }
+
+        .input-group label {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            font-size: 16px;
+            color: var(--label-color);
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+
+        .input-group input:focus + label,
+        .input-group input:valid + label {
+            top: -10px;
+            left: 10px;
+            font-size: 12px;
+            color: var(--primary-color);
+            background-color: var(--form-bg);
+            padding: 0 5px;
+            transform: translateX(-5px);
+        }
+        
+        button {
+            width: 100%;
+            padding: 15px;
+            background-color: var(--primary-color);
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #4a148c;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .error-message {
+            color: var(--error-color);
+            margin-top: 25px;
+            font-size: 14px;
+            font-weight: 400;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        .error-message.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .success-message {
+            display: none;
+            color: var(--success-color);
+            margin-top: 25px;
+            font-size: 1.1rem;
+            font-weight: 500;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .success-message.show {
+            display: flex;
+        }
+
+        .checkmark {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--success-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            line-height: 1;
+            animation: rotate 1s infinite linear;
+        }
+
+        @keyframes rotate {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-container">
+        <form class="login-form" id="loginForm">
+            <h2>Log In</h2>
+            <div class="input-group">
+                <input type="text" id="username" name="username" required>
+                <label for="username">Username</label>
+            </div>
+            <div class="input-group">
+                <input type="password" id="password" name="password" required>
+                <label for="password">Password</label>
+            </div>
+            <button type="submit" id="loginButton">Sign In</button>
+        </form>
+        <div id="errorMessage" class="error-message">Invalid username or password.</div>
+        <div id="successMessage" class="success-message">
+            <span class="checkmark">&#10003;</span>
+            <span class="text">Access Granted!</span>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const loginForm = document.getElementById('loginForm');
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+            const errorMessage = document.getElementById('errorMessage');
+            const successMessage = document.getElementById('successMessage');
+
+            loginForm.addEventListener('submit', (e) => {
+                e.preventDefault(); 
+
+                const username = usernameInput.value;
+                const password = passwordInput.value;
+
+                if (username === 'Lekha' && password === '000') {
+                    errorMessage.classList.remove('show');
+                    successMessage.classList.add('show');
+                    
+                    setTimeout(() => {
+                        window.location.href = 'B-Mid process.html';
+                    }, 1000); // 1-second delay before redirect
+
+                } else {
+                    successMessage.classList.remove('show');
+                    errorMessage.classList.add('show');
+                    usernameInput.value = '';
+                    passwordInput.value = '';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

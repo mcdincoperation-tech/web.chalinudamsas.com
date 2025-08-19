@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knox AI Birthday Surprise!</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Optional: Custom font import for a nicer look */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f06292 0%, #e91e63 100%); /* Vibrant pink/red gradient */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden; /* Prevent scrolling, especially for animations */
+        }
+
+        /* Container for the AI interaction, centered on screen */
+        .ai-container {
+            background-color: rgba(255, 255, 255, 0.95); /* Slightly transparent white */
+            padding: 2.5rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 90%;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            animation: fadeIn 1s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* AI Typing Indicator */
+        .ai-typing-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-style: italic;
+            color: #6b7280;
+            margin-top: 1rem;
+        }
+        .dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: #6b7280;
+            border-radius: 50%;
+            margin: 0 3px;
+            animation: pulse-dot 1.4s infinite ease-in-out both;
+        }
+        .dot:nth-child(1) { animation-delay: 0.2s; }
+        .dot:nth-child(2) { animation-delay: 0.4s; }
+        .dot:nth-child(3) { animation-delay: 0.6s; }
+        @keyframes pulse-dot {
+            0%, 80%, 100% { transform: scale(0); opacity: 0; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Confetti Animation (for birthday wish) */
+        .confetti-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 10;
+        }
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #f0f; /* Pink */
+            opacity: 0;
+            animation: confetti-fall 5s forwards;
+            border-radius: 50%; /* Make them round */
+        }
+        .confetti:nth-child(2n) { background-color: #0ff; } /* Cyan */
+        .confetti:nth-child(3n) { background-color: #ff0; } /* Yellow */
+        .confetti:nth-child(4n) { background-color: #f0f; } /* Pink */
+
+        @keyframes confetti-fall {
+            0% {
+                transform: translate(0, -100px) rotateZ(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--x), var(--y)) rotateZ(720deg);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ai-container">
+        <h1 class="text-4xl font-extrabold text-pink-600">
+            🤖 Knox AI (Knox 999 Version)
+        </h1>
+        <p id="aiMessage" class="text-xl text-gray-800 mb-4 transition-opacity duration-500 ease-in-out">
+            </p>
+
+        <div id="userInput" class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <input
+                type="text"
+                id="userReply"
+                class="flex-grow p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-gray-700 text-center"
+                placeholder="Type 'Yes' or 'No'..."
+                disabled> <button
+                id="sendReplyBtn"
+                class="bg-pink-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-pink-300 transition-colors duration-200"
+                disabled> Send Reply
+            </button>
+        </div>
+
+        <p id="subMessage" class="text-base text-gray-500 mt-2 hidden transition-opacity duration-500 ease-in-out">
+            </p>
+
+        <div id="confettiContainer" class="confetti-container hidden"></div>
+
+    </div>
+
+    <audio id="birthdaySound" src="happy-birthday-254480.mp3" preload="auto"></audio>
+
+    <script>
+        const aiMessageElem = document.getElementById('aiMessage');
+        const userReplyInput = document.getElementById('userReply');
+        const sendReplyBtn = document.getElementById('sendReplyBtn');
+        const subMessageElem = document.getElementById('subMessage');
+        const confettiContainer = document.getElementById('confettiContainer');
+        const birthdaySound = document.getElementById('birthdaySound'); // Audio element
+
+        const TARGET_NAME = "Lekha";
+        const BIRTHDAY_DATE = "2025.10.02";
+        const CREATOR_NAME = "chalinudamsas";
+
+        let confettiInterval = null;
+
+        // Function to display AI messages with a typing animation
+        async function displayAITypingMessage(message) {
+            aiMessageElem.textContent = ''; // Clear existing message
+            userReplyInput.disabled = true;
+            sendReplyBtn.disabled = true;
+
+            const aiTypingIndicator = document.createElement('div');
+            aiTypingIndicator.className = 'ai-typing-indicator';
+            aiTypingIndicator.innerHTML = 'Knox AI is thinking<span class="dot"></span><span class="dot"></span><span class="dot"></span>';
+            aiMessageElem.parentNode.insertBefore(aiTypingIndicator, aiMessageElem.nextSibling);
+
+            await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate typing delay
+
+            aiTypingIndicator.remove(); // Remove typing indicator
+            aiMessageElem.innerHTML = message; // Use innerHTML to allow for styled text
+            
+            userReplyInput.disabled = false; // Enable input
+            sendReplyBtn.disabled = false; // Enable button
+            userReplyInput.focus(); // Focus input for user convenience
+        }
+
+        // Function to generate a single confetti element
+        function createSingleConfetti() {
+            const confetti = document.createElement('div');
+            confetti.className = 'confetti';
+            // Randomize starting position and animation delay
+            confetti.style.left = `${Math.random() * 100}vw`;
+            confetti.style.animationDelay = `${Math.random() * 0.5}s`;
+            // Randomize ending position for a more dispersed effect
+            confetti.style.setProperty('--x', `${(Math.random() - 0.5) * 500}px`);
+            confetti.style.setProperty('--y', `${window.innerHeight + 200}px`);
+            confettiContainer.appendChild(confetti);
+
+            // Remove confetti after animation to prevent DOM clutter
+            confetti.addEventListener('animationend', () => {
+                confetti.remove();
+            });
+        }
+
+        // Function to start the continuous confetti stream
+        function startConfettiStream() {
+            confettiContainer.classList.remove('hidden');
+            // Start an interval to create a new confetti every 100ms
+            confettiInterval = setInterval(createSingleConfetti, 100);
+        }
+
+        // Function to stop the confetti stream
+        function stopConfettiStream() {
+            clearInterval(confettiInterval);
+            confettiInterval = null;
+        }
+
+        // --- Main AI Dialogue Flow ---
+
+        // Step 1: Initial greeting from Knox AI
+        displayAITypingMessage(`Hey, is your name ${TARGET_NAME}?`);
+
+        // Event listener for user's reply
+        sendReplyBtn.addEventListener('click', handleUserReply);
+        userReplyInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                handleUserReply();
+            }
+        });
+
+        async function handleUserReply() {
+            const reply = userReplyInput.value.trim().toLowerCase();
+            userReplyInput.value = ''; // Clear input
+
+            if (reply === 'yes') {
+                aiMessageElem.classList.remove('text-red-600'); // Ensure color is not red
+                aiMessageElem.classList.add('text-gray-800');
+
+                // Disable input and button permanently for success
+                userReplyInput.disabled = true;
+                sendReplyBtn.disabled = true;
+                sendReplyBtn.textContent = 'Reply Sent';
+
+                const amazingWish = `
+                    Hey ${TARGET_NAME}, I'm Knox AI, specially here for you! 🎉<br><br>
+                    Your birthday is today, on <span class="font-bold text-pink-600">${BIRTHDAY_DATE}</span>!<br><br>
+                    Sending you the happiest wishes for a day filled with joy, laughter, and incredible surprises! May your year ahead be even more amazing than you can imagine! ✨🎂
+                    <br><br>
+                    <span class="block text-2xl font-extrabold text-purple-700 mt-4 animate-pulse">HAPPY BIRTHDAY!</span>
+                `;
+                
+                // Display the amazing wish with typing animation
+                await displayAITypingMessage(amazingWish);
+                
+                // Play sound (if available)
+                if (birthdaySound) {
+                    // Try to play the sound. Catching potential errors if autoplay is blocked.
+                    birthdaySound.play().catch(e => {
+                        console.error("Error playing sound:", e);
+                        // Optional: Inform user if sound couldn't play
+                        // displayAITypingMessage("Couldn't play birthday sound automatically. Please check your browser's autoplay settings.");
+                    });
+                }
+
+                // Start continuous confetti animation
+                startConfettiStream();
+
+                // Show the "created by" message
+                subMessageElem.textContent = `This process was created by ${CREATOR_NAME}.`;
+                subMessageElem.classList.remove('hidden');
+            } else if (reply === 'no') {
+                // Disable input and button permanently for error
+                userReplyInput.disabled = true;
+                sendReplyBtn.disabled = true;
+                sendReplyBtn.textContent = 'Reply Sent';
+
+                const errorMessage = "This site is not suitable for you. This site was developed for a special user, Lekha. So please go back to the previous website.";
+                aiMessageElem.classList.remove('text-gray-800');
+                aiMessageElem.classList.add('text-red-600');
+                await displayAITypingMessage(errorMessage);
+                
+                // Stop the confetti stream if it was running
+                stopConfettiStream();
+
+                // Create the "Go Back to Home" button
+                const goBackButton = document.createElement('button');
+                goBackButton.textContent = 'Go Back to Home';
+                goBackButton.className = 'bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300 mt-4';
+                
+                // Add the event listener to redirect to index.html
+                goBackButton.addEventListener('click', () => {
+                    window.location.href = 'index.html'; // Redirect to your home page
+                });
+
+                userInput.innerHTML = ''; // Clear old input/button
+                userInput.appendChild(goBackButton); // Add the new go back button
+            } else {
+                // Handle invalid replies gracefully
+                await displayAITypingMessage("Please reply with 'Yes' or 'No'.");
+            }
+        }
+    </script>
+</body>
+</html>
